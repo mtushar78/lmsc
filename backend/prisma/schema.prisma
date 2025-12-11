@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Student {
+  id            Int              @id @default(autoincrement())
+  name          String
+  email         String?
+  quiz_attempts QuizAttempt[]
+  task_submissions TaskSubmission[]
+  lesson_views  LessonView[]
+}
+
+model Teacher {
+  id      Int    @id @default(autoincrement())
+  name    String
+  email   String?
+  lessons Lesson[]
+}
+
+model Lesson {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String?
+  video_url   String?
+  teacher     Teacher?      @relation(fields: [teacher_id], references: [id])
+  teacher_id  Int?
+  published_at DateTime?
+  questions   QuizQuestion[]
+  tasks       LessonTask[]
+  quiz_attempts QuizAttempt[]
+  lesson_views LessonView[]
+}
+
+model QuizQuestion {
+  id           Int    @id @default(autoincrement())
+  lesson       Lesson @relation(fields: [lesson_id], references: [id])
+  lesson_id    Int
+  question_text String
+  option_a     String
+  option_b     String
+  option_c     String?
+  option_d     String?
+  correct_option String
+  answers      QuizAnswer[]
+}
+
+model QuizAttempt {
+  id          Int         @id @default(autoincrement())
+  lesson      Lesson      @relation(fields: [lesson_id], references: [id])
+  lesson_id   Int
+  student     Student     @relation(fields: [student_id], references: [id])
+  student_id  Int
+  submitted_at DateTime?
+  score       Int?
+  answers     QuizAnswer[]
+}
+
+model QuizAnswer {
+  id          Int         @id @default(autoincrement())
+  attempt     QuizAttempt @relation(fields: [attempt_id], references: [id])
+  attempt_id  Int
+  question    QuizQuestion @relation(fields:[question_id], references:[id])
+  question_id Int
+  answer      String
+}
+
+model LessonTask {
+  id        Int    @id @default(autoincrement())
+  lesson    Lesson @relation(fields: [lesson_id], references: [id])
+  lesson_id Int
+  task_text String
+  submissions TaskSubmission[]
+}
+
+model TaskSubmission {
+  id          Int        @id @default(autoincrement())
+  task        LessonTask @relation(fields: [task_id], references: [id])
+  task_id     Int
+  student     Student    @relation(fields: [student_id], references: [id])
+  student_id  Int
+  submitted_at DateTime?
+  content     String
+  mark        Int?
+}
+
+model LessonView {
+  id         Int     @id @default(autoincrement())
+  lesson     Lesson  @relation(fields: [lesson_id], references: [id])
+  lesson_id  Int
+  student    Student @relation(fields: [student_id], references: [id])
+  student_id Int
+  viewed_at  DateTime?
+}

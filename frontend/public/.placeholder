@@ -1,0 +1,2 @@
+# Placeholder
+This file prevents Docker build errors when `public` is absent.

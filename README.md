@@ -1,377 +1,282 @@
 # LMSC E-Learning Platform
 
-A full-stack web application for managing online lessons, quizzes, and tasks. Students can submit quizzes and tasks while teachers can track engagement and mark submissions.
+A full-stack e-learning platform with automated lesson management, quiz systems, and student progress tracking.
+
+## Description
+
+LMSC is a production-ready e-learning platform featuring:
+- Student lesson viewing and quiz submission
+- Teacher dashboard with engagement analytics
+- Automated database migrations and seeding
+- Full Docker support with hot-reload development
+- Comprehensive test coverage (66+ tests)
 
 ## Tech Stack
 
-**Backend:**
-- Node.js + Express
-- PostgreSQL (Neon)
-- Prisma ORM (v5)
+### Backend
+- **Node.js 18** - Runtime environment
+- **Express.js** - Web framework
+- **PostgreSQL 15** - Primary database
+- **Prisma ORM** - Database management
+- **Redis** - Caching layer
+- **JWT** - Authentication
+- **Jest + Supertest** - Testing (68.87% coverage)
 
-**Frontend:**
-- Next.js (React)
-- Material-UI (MUI v5)
-- SWR (data fetching)
+### Frontend
+- **Next.js 14** - React framework
+- **React 18** - UI library
+- **Material-UI v5** - Component library
+- **SWR** - Data fetching
+- **Emotion** - Styling
+
+### DevOps
+- **Docker + Docker Compose** - Containerization
+- **Git** - Version control
 
 ## Project Structure
 
 ```
 LMSC/
-├── backend/
+├── backend/                    # Express.js API
 │   ├── src/
-│   │   ├── app.js                          # Express app setup, middleware, CORS
-│   │   ├── routes/
-│   │   │   ├── users.js                    # GET /api/users
-│   │   │   ├── lessons.js                  # Lesson CRUD, quiz/task submissions
-│   │   │   └── teacher.js                  # GET /api/teacher/lessons/:id/engagement
-│   │   ├── controllers/
-│   │   │   ├── usersController.js          # List users
-│   │   │   ├── lessonsController.js        # Lesson handlers (list, detail, submit, mark)
-│   │   │   └── teacherController.js        # Engagement summary handler
-│   │   └── services/
-│   │       ├── usersService.js             # Fetch students & teachers
-│   │       ├── lessonsService.js           # DB queries (lessons, attempts, submissions)
-│   │       └── teacherService.js           # Engagement data aggregation
+│   │   ├── routes/            # API routes
+│   │   ├── controllers/       # Request handlers
+│   │   ├── services/          # Business logic
+│   │   ├── domain/            # Validators & mappers
+│   │   ├── middleware/        # Auth middleware
+│   │   └── __tests__/         # Test suites
 │   ├── prisma/
-│   │   ├── schema.prisma                   # Prisma data model
-│   │   ├── migrations/
-│   │   │   ├── migration_lock.toml
-│   │   │   └── 20251210212544_init/
-│   │   │       └── migration.sql           # Initial schema migration
-│   ├── data/
-│   │   └── lmsc.db                         # SQLite fallback (not used in prod)
-│   ├── index.js                            # Server entry, graceful shutdown
-│   ├── db.js                               # Prisma client (singleton pattern)
-│   ├── seed.js                             # Database seeding (students, lessons, quizzes)
-│   ├── package.json                        # Backend dependencies
-│   ├── package-lock.json
-│   ├── prisma.config.ts                    # Prisma CLI configuration
-│   └── .env                                # Environment variables (not committed)
-├── frontend/
+│   │   ├── schema.prisma      # Database schema
+│   │   └── migrations/        # Migration files
+│   ├── index.js               # Server entry
+│   ├── seed.js                # Database seeding
+│   └── docker-entrypoint.sh   # Auto-migration script
+│
+├── frontend/                   # Next.js app
 │   ├── pages/
-│   │   ├── _app.js                         # Next.js app wrapper, MUI theme provider
-│   │   ├── index.js                        # Login & role selection
-│   │   ├── student/
-│   │   │   ├── lessons.js                  # List lessons with student scores
-│   │   │   └── lesson/
-│   │   │       └── [id].js                 # Lesson detail, quiz/task submission
-│   │   └── teacher/
-│   │       ├── lessons.js                  # Teacher lesson list with engagement
-│   │       └── lesson/
-│   │           └── [id].js                 # Engagement summary, marking interface
-│   ├── styles.css                          # Global styles, Roboto font, background
-│   ├── package.json                        # Frontend dependencies (Next, MUI, SWR)
-│   ├── package-lock.json
-│   ├── next.config.js                      # Next.js configuration
-│   └── .env.local                          # Frontend environment (not committed)
-├── .gitignore                              # Global ignore: node_modules, .env, build artifacts
-├── README.md                               # This file
-└── prisma.config.ts                        # Prisma CLI config for migrations
+│   │   ├── index.js           # Login page
+│   │   ├── student/           # Student pages
+│   │   └── teacher/           # Teacher pages
+│   └── styles.css
+│
+├── docker-compose.yml          # Docker orchestration
+├── docker-helper.sh            # Helper commands
+└── DOCKER_SETUP.md            # Docker documentation
 ```
 
-## File Descriptions
-
-**Backend Core:**
-- `index.js` — Starts Express server, handles SIGINT/SIGTERM for graceful Prisma disconnect
-- `db.js` — Prisma client with singleton pattern (prevents connection exhaustion in dev)
-- `seed.js` — Creates sample students, teachers, lessons, questions, tasks
-- `src/app.js` — Express setup: CORS (configurable via `CORS_ORIGIN` env), JSON parsing, route mounting
-
-**Backend Routes & Controllers:**
-- Routes delegate to controllers; controllers call services
-- `src/routes/users.js` → `usersController.js` → `usersService.js`
-- `src/routes/lessons.js` → `lessonsController.js` → `lessonsService.js`
-- `src/routes/teacher.js` → `teacherController.js` → `teacherService.js`
-
-**Backend Services:**
-- `lessonsService.js` — ~100 lines: getAllLessons, getLesson, getStatus, recordView, submitQuiz, submitTask, getAttempts, getSubmissions, markTask, markQuiz
-- `usersService.js` — getAllUsers (students + teachers)
-- `teacherService.js` — getEngagement (per-lesson student progress)
-
-**Frontend Pages:**
-- `_app.js` — Wraps all pages with MUI ThemeProvider and CssBaseline
-- `index.js` — Dropdown login for role & user selection
-- `student/lessons.js` — Grid of lesson cards showing quiz score & task mark
-- `student/lesson/[id].js` — Lesson detail with video, quiz form, task textarea; auto-redirect when done
-- `teacher/lessons.js` — Lesson cards showing engagement metrics (views, quiz attempts)
-- `teacher/lesson/[id].js` — Engagement table, quiz attempts with Q&A details, task submissions with inline marking
-
-**Database:**
-- Migrations in `prisma/migrations/` are committed to enable easy schema reproduction
-- `schema.prisma` — 9 models (Student, Teacher, Lesson, QuizQuestion, QuizAttempt, QuizAnswer, LessonTask, TaskSubmission, LessonView)
-```
-
-## Features
-
-### Student Flow
-- View available lessons with descriptions and YouTube videos
-- Submit quizzes with immediate scoring
-- Submit written tasks
-- View personal quiz scores and task marks on lessons list
-- See completion status (awaiting mark, marked, not submitted)
-
-### Teacher Flow
-- View lessons with student engagement metrics (views, quiz completions)
-- Review all student quiz attempts with question details and answers
-- Review and mark task submissions
-- Inline marking interface for both quizzes and tasks
-
-## Setup & Installation
+## How to Run Locally
 
 ### Prerequisites
-- Node.js 16+ and npm
-- PostgreSQL database (Neon recommended for cloud hosting)
-- Git
+- Node.js 18+
+- PostgreSQL 15+
+- Redis (optional)
 
 ### Backend Setup
 
-1. **Navigate to backend folder:**
-   ```bash
-   cd backend
-   ```
+```bash
+# Navigate to backend
+cd backend
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+# Install dependencies
+npm install
 
-3. **Configure environment:**
-   Create `.env` file with your PostgreSQL connection:
-   ```
-   DATABASE_URL="postgresql://user:password@host/dbname?sslmode=require"
-   PORT=4000
-   NODE_ENV=development
-   ```
+# Setup environment
+cp .env.example .env
+# Edit .env with your DATABASE_URL
 
-4. **Set up database:**
-   ```bash
-   # Generate Prisma client
-   npx prisma generate
+# Run migrations
+npx prisma migrate dev
 
-   # Create and apply migrations
-   npx prisma migrate dev --name init
+# Seed database
+npm run seed
 
-   # Seed sample data
-   npm run seed
-   ```
+# Start development server
+npm run dev
+```
 
-5. **Start the server:**
-   ```bash
-   # Development (with nodemon)
-   npm run dev
-
-   # Production
-   npm start
-   ```
-
-   Server runs on `http://localhost:4000`
+Backend runs on [http://localhost:4000](http://localhost:4000)
 
 ### Frontend Setup
 
-1. **Navigate to frontend folder:**
-   ```bash
-   cd frontend
-   ```
+```bash
+# Navigate to frontend
+cd frontend
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+# Install dependencies
+npm install
 
-3. **Configure environment:**
-   Create `.env.local` file:
-   ```
-   NEXT_PUBLIC_API_URL=http://localhost:4000
-   ```
+# Setup environment
+cp .env.example .env.local
+# Edit .env.local if needed (default: http://localhost:4000)
 
-4. **Start development server:**
-   ```bash
-   npm run dev
-   ```
+# Start development server
+npm run dev
+```
 
-   Frontend runs on `http://localhost:3000`
+Frontend runs on [http://localhost:3000](http://localhost:3000)
 
-## API Endpoints
+## How to Run in Docker
 
-### Users
-- `GET /api/users` — List all students and teachers
+Docker setup includes **automatic migrations and seeding** - just start the containers!
 
-### Lessons
-- `GET /api/lessons` — List all lessons
-- `GET /api/lessons/:id` — Get lesson details with quiz questions and tasks
-- `GET /api/lessons/:id/status?student_id=X` — Get student's quiz/task status for lesson
-- `POST /api/lessons/view` — Record student lesson view
-- `POST /api/lessons/quiz/submit` — Submit quiz answers
-- `POST /api/lessons/task/submit` — Submit task response
-- `GET /api/lessons/:id/attempts` — Get quiz attempts (teacher view)
-- `GET /api/lessons/:id/submissions` — Get task submissions (teacher view)
-- `POST /api/lessons/quiz/mark` — Update quiz score (teacher)
-- `POST /api/lessons/task/mark` — Update task mark (teacher)
+### Quick Start
 
-### Teacher
-- `GET /api/teacher/lessons/:id/engagement` — Student engagement summary for lesson
+```bash
+# Start all services (migrations and seeding happen automatically)
+docker-compose up -d
 
-### Health
-- `GET /health` — Server health check (uptime)
+# Services available at:
+# - Frontend: http://localhost:3000
+# - Backend:  http://localhost:4000
+# - PostgreSQL: localhost:5432
+# - Redis: localhost:6379
+```
 
-## Database Schema
+### Using Helper Script
 
-### Models
-- **Student** — name, email
-- **Teacher** — name, email
-- **Lesson** — title, description, video_url, teacher_id, published_at
-- **QuizQuestion** — lesson_id, question_text, options, correct_option
-- **QuizAttempt** — lesson_id, student_id, score, submitted_at
-- **QuizAnswer** — attempt_id, question_id, answer
-- **LessonTask** — lesson_id, task_text
-- **TaskSubmission** — task_id, student_id, content, mark, submitted_at
-- **LessonView** — lesson_id, student_id, viewed_at
+```bash
+# Fresh setup with clean data
+./docker-helper.sh setup
 
-## Production Deployment
+# Start services
+./docker-helper.sh start
+
+# View logs
+./docker-helper.sh logs backend
+./docker-helper.sh logs frontend
+
+# Stop services
+./docker-helper.sh stop
+
+# Complete cleanup
+docker-compose down -v
+```
+
+### What Happens Automatically
+
+When you run `docker-compose up -d`:
+1. ✅ PostgreSQL and Redis start
+2. ✅ Backend waits for database
+3. ✅ **Migrations run automatically**
+4. ✅ **Database seeds automatically** with sample data
+5. ✅ Backend starts on port 4000
+6. ✅ Frontend starts on port 3000
+
+**Sample Data Included:**
+- Students: Alice Johnson, Bob Smith, Charlie Lee
+- Teachers: Mrs Green, Mr Brown
+- Lessons: Quadratics, Forces
+- Quiz questions and tasks
+
+See [DOCKER_SETUP.md](DOCKER_SETUP.md) for detailed Docker documentation.
+
+## How to Deploy
+
+### Production Build
+
+#### Backend
+```bash
+cd backend
+npm install
+NODE_ENV=production npm start
+```
+
+#### Frontend
+```bash
+cd frontend
+npm install
+npm run build
+npm start
+```
+
+### Docker Deployment
+
+```bash
+# Build images
+docker build -t lmsc-backend:latest ./backend
+docker build -t lmsc-frontend:latest ./frontend
+
+# Run with docker-compose
+docker-compose up -d
+
+# Or push to registry
+docker tag lmsc-backend:latest myregistry/lmsc-backend:latest
+docker push myregistry/lmsc-backend:latest
+```
 
 ### Environment Variables
-Set these in your deployment platform (Vercel, Render, AWS, etc.):
 
-**Backend:**
+**Backend (.env):**
 ```
-DATABASE_URL=<your-neon-connection-string>
-PORT=4000
+DATABASE_URL=postgresql://user:password@host:5432/lmsc_db
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your-secret-key
+CORS_ORIGIN=http://localhost:3000
 NODE_ENV=production
-CORS_ORIGIN=https://your-frontend-domain.com
+PORT=4000
 ```
 
-**Frontend:**
+**Frontend (.env.local):**
 ```
-NEXT_PUBLIC_API_URL=https://your-api-domain.com
-```
-
-### Backend Deployment
-
-1. **Ensure migrations are committed:**
-   ```bash
-   git add backend/prisma/migrations/
-   git commit -m "Add Prisma migrations"
-   ```
-
-2. **Deploy to Vercel, Render, or similar:**
-   - Configure DATABASE_URL and other env vars in platform settings
-   - Set up deployment script to run `npx prisma migrate deploy` before starting the server
-   - Example `Procfile` for Heroku/Render:
-     ```
-     release: npx prisma migrate deploy
-     web: npm start
-     ```
-
-3. **Start the server:**
-   The `/health` endpoint can be used for readiness checks
-
-### Frontend Deployment
-
-1. **Deploy to Vercel (recommended for Next.js):**
-   ```bash
-   npm install -g vercel
-   vercel
-   ```
-
-2. **Or deploy elsewhere:**
-   - Run `npm run build` locally to test
-   - Configure `NEXT_PUBLIC_API_URL` to point to your production backend
-   - Deploy the built app
-
-## Development
-
-### Running Locally
-```bash
-# Terminal 1: Backend
-cd backend
-npm run dev
-
-# Terminal 2: Frontend
-cd frontend
-npm run dev
+NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-Visit `http://localhost:3000` in your browser.
-
-### Seeding Test Data
-```bash
-cd backend
-npm run seed
-```
-
-Adds 3 students, 2 teachers, 2 lessons with quiz questions and tasks.
-
-### Database Management
-```bash
-# View database in Prisma Studio
-cd backend
-npx prisma studio
-
-# Create a new migration after schema changes
-npx prisma migrate dev --name <migration-name>
-
-# Reset database (dev only - WARNING: deletes all data)
-npx prisma migrate reset
-```
-
-## Architecture
-
-### Backend Architecture (MVC)
-- **Routes** (`src/routes/`) — Define API endpoints
-- **Controllers** (`src/controllers/`) — Handle requests, validate input, call services
-- **Services** (`src/services/`) — Encapsulate business logic and DB queries
-- **Database** (`db.js`) — Prisma client (singleton pattern for dev/prod)
-
-### Frontend Architecture
-- **Pages** — Next.js pages with React components
-- **Styling** — Material-UI for consistent UI, global styles in `styles.css`
-- **Data Fetching** — SWR for client-side data with automatic caching
-- **Environment** — `NEXT_PUBLIC_*` variables for client-side config
-
-## Key Design Decisions
-
-1. **Prisma ORM** — Type-safe DB access, migrations, and query building
-2. **Singleton Prisma Client** — Preserves connections in development (nodemon), avoids exhausting the connection pool
-3. **Graceful Shutdown** — SIGINT/SIGTERM handlers to disconnect Prisma cleanly
-4. **CORS Origin from Env** — Prevents open CORS in production
-5. **Health Endpoint** — `/health` for load balancer readiness checks
-6. **Environment Variables** — Separate configs for dev/prod without code changes
-7. **Migrations Committed** — Ensures users can populate the DB schema when cloning
-
-## Troubleshooting
-
-### Backend Issues
-
-**Error: "adapter" property can only be provided with driverAdapters**
-- Use `datasourceUrl` instead of `adapter` in PrismaClient options
-
-**Port already in use**
-- Change `PORT` in `.env` or kill process: `lsof -i :4000`
-
-**Database connection fails**
-- Verify `DATABASE_URL` is correct and Neon/PostgreSQL is running
-- Check network connectivity if using a remote database
-
-### Frontend Issues
-
-**API returns 404**
-- Verify backend is running on the configured API URL
-- Check `NEXT_PUBLIC_API_URL` in `.env.local`
-
-**Build fails with "process.env.NEXT_PUBLIC_API_URL is undefined"**
-- Ensure `.env.local` is created and Next.js is restarted after changes
+### Production Checklist
+- [ ] Set strong `JWT_SECRET`
+- [ ] Enable HTTPS/TLS
+- [ ] Configure CORS for production domain
+- [ ] Set up database backups
+- [ ] Enable logging and monitoring
+- [ ] Configure health checks
+- [ ] Set up error tracking (Sentry, etc.)
 
 ## Testing
 
-Currently no automated tests. Recommended additions:
-- Jest for backend unit tests (services and utils)
-- React Testing Library for frontend component tests
-- Integration tests for key API flows
+```bash
+cd backend
 
-## Contributing
+# Run all tests with coverage
+npm test
 
-1. Create a feature branch from `main`
-2. Make changes and test locally
-3. Commit and push
-4. Create a pull request
+# Watch mode
+npm run test:watch
+
+# Integration tests only
+npm run test:integration
+
+# Unit tests only
+npm run test:unit
+```
+
+**Test Coverage:** 68.87% (66+ tests)
+- Domain/Validators: 97%
+- Services: 86%
+- Controllers: 87%
+- Integration: Full API flows
+
+## API Endpoints
+
+### Public
+- `GET /health` - Health check
+- `GET /api/users` - Get all users
+- `GET /api/lessons` - Get all lessons
+
+### Students
+- `GET /api/lessons/:id` - Get lesson details
+- `POST /api/lessons/:id/quiz` - Submit quiz
+- `POST /api/lessons/:id/task` - Submit task
+- `POST /api/lessons/:id/view` - Mark lesson viewed
+
+### Teachers
+- `GET /api/teacher/engagement` - Get engagement analytics
+
+## Documentation
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System design and scalability
+- [DOCKER_SETUP.md](DOCKER_SETUP.md) - Docker usage guide
+- [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Quick reference
+
+## License
+
+MIT

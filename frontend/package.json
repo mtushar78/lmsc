@@ -16,5 +16,8 @@
     "@mui/icons-material": "5.14.0",
     "@emotion/react": "11.11.0",
     "@emotion/styled": "11.11.0"
+  },
+  "devDependencies": {
+    "next": "^14.0.0"
   }
 }

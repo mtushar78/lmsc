@@ -20,29 +20,86 @@ A full-stack web application for managing online lessons, quizzes, and tasks. St
 LMSC/
 ├── backend/
 │   ├── src/
-│   │   ├── app.js           # Express app setup
-│   │   ├── routes/          # API route handlers
-│   │   ├── controllers/      # Request handlers
-│   │   └── services/         # Business logic & DB queries
+│   │   ├── app.js                          # Express app setup, middleware, CORS
+│   │   ├── routes/
+│   │   │   ├── users.js                    # GET /api/users
+│   │   │   ├── lessons.js                  # Lesson CRUD, quiz/task submissions
+│   │   │   └── teacher.js                  # GET /api/teacher/lessons/:id/engagement
+│   │   ├── controllers/
+│   │   │   ├── usersController.js          # List users
+│   │   │   ├── lessonsController.js        # Lesson handlers (list, detail, submit, mark)
+│   │   │   └── teacherController.js        # Engagement summary handler
+│   │   └── services/
+│   │       ├── usersService.js             # Fetch students & teachers
+│   │       ├── lessonsService.js           # DB queries (lessons, attempts, submissions)
+│   │       └── teacherService.js           # Engagement data aggregation
 │   ├── prisma/
-│   │   ├── schema.prisma    # Data model
-│   │   └── migrations/      # DB migration files
-│   ├── db.js                # Prisma client (singleton pattern)
-│   ├── seed.js              # Database seeding script
-│   ├── index.js             # Server entry point
-│   ├── .env                 # Environment variables (not committed)
-│   └── package.json
+│   │   ├── schema.prisma                   # Prisma data model
+│   │   ├── migrations/
+│   │   │   ├── migration_lock.toml
+│   │   │   └── 20251210212544_init/
+│   │   │       └── migration.sql           # Initial schema migration
+│   ├── data/
+│   │   └── lmsc.db                         # SQLite fallback (not used in prod)
+│   ├── index.js                            # Server entry, graceful shutdown
+│   ├── db.js                               # Prisma client (singleton pattern)
+│   ├── seed.js                             # Database seeding (students, lessons, quizzes)
+│   ├── package.json                        # Backend dependencies
+│   ├── package-lock.json
+│   ├── prisma.config.ts                    # Prisma CLI configuration
+│   └── .env                                # Environment variables (not committed)
 ├── frontend/
 │   ├── pages/
-│   │   ├── index.js         # Login/role selection
-│   │   ├── student/         # Student views
-│   │   └── teacher/         # Teacher views
-│   ├── styles.css           # Global styles
-│   ├── .env.local           # Frontend env (not committed)
-│   └── package.json
-├── .gitignore
-├── README.md
-└── prisma.config.ts         # Prisma CLI configuration
+│   │   ├── _app.js                         # Next.js app wrapper, MUI theme provider
+│   │   ├── index.js                        # Login & role selection
+│   │   ├── student/
+│   │   │   ├── lessons.js                  # List lessons with student scores
+│   │   │   └── lesson/
+│   │   │       └── [id].js                 # Lesson detail, quiz/task submission
+│   │   └── teacher/
+│   │       ├── lessons.js                  # Teacher lesson list with engagement
+│   │       └── lesson/
+│   │           └── [id].js                 # Engagement summary, marking interface
+│   ├── styles.css                          # Global styles, Roboto font, background
+│   ├── package.json                        # Frontend dependencies (Next, MUI, SWR)
+│   ├── package-lock.json
+│   ├── next.config.js                      # Next.js configuration
+│   └── .env.local                          # Frontend environment (not committed)
+├── .gitignore                              # Global ignore: node_modules, .env, build artifacts
+├── README.md                               # This file
+└── prisma.config.ts                        # Prisma CLI config for migrations
+```
+
+## File Descriptions
+
+**Backend Core:**
+- `index.js` — Starts Express server, handles SIGINT/SIGTERM for graceful Prisma disconnect
+- `db.js` — Prisma client with singleton pattern (prevents connection exhaustion in dev)
+- `seed.js` — Creates sample students, teachers, lessons, questions, tasks
+- `src/app.js` — Express setup: CORS (configurable via `CORS_ORIGIN` env), JSON parsing, route mounting
+
+**Backend Routes & Controllers:**
+- Routes delegate to controllers; controllers call services
+- `src/routes/users.js` → `usersController.js` → `usersService.js`
+- `src/routes/lessons.js` → `lessonsController.js` → `lessonsService.js`
+- `src/routes/teacher.js` → `teacherController.js` → `teacherService.js`
+
+**Backend Services:**
+- `lessonsService.js` — ~100 lines: getAllLessons, getLesson, getStatus, recordView, submitQuiz, submitTask, getAttempts, getSubmissions, markTask, markQuiz
+- `usersService.js` — getAllUsers (students + teachers)
+- `teacherService.js` — getEngagement (per-lesson student progress)
+
+**Frontend Pages:**
+- `_app.js` — Wraps all pages with MUI ThemeProvider and CssBaseline
+- `index.js` — Dropdown login for role & user selection
+- `student/lessons.js` — Grid of lesson cards showing quiz score & task mark
+- `student/lesson/[id].js` — Lesson detail with video, quiz form, task textarea; auto-redirect when done
+- `teacher/lessons.js` — Lesson cards showing engagement metrics (views, quiz attempts)
+- `teacher/lesson/[id].js` — Engagement table, quiz attempts with Q&A details, task submissions with inline marking
+
+**Database:**
+- Migrations in `prisma/migrations/` are committed to enable easy schema reproduction
+- `schema.prisma` — 9 models (Student, Teacher, Lesson, QuizQuestion, QuizAttempt, QuizAnswer, LessonTask, TaskSubmission, LessonView)
 ```
 
 ## Features
@@ -318,11 +375,3 @@ Currently no automated tests. Recommended additions:
 2. Make changes and test locally
 3. Commit and push
 4. Create a pull request
-
-## License
-
-MIT
-
-## Support
-
-For issues or questions, open a GitHub issue in the repository.

@@ -132,25 +132,6 @@ docker-compose up -d
 # - Redis: localhost:6379
 ```
 
-### Using Helper Script
-
-```bash
-# Fresh setup with clean data
-./docker-helper.sh setup
-
-# Start services
-./docker-helper.sh start
-
-# View logs
-./docker-helper.sh logs backend
-./docker-helper.sh logs frontend
-
-# Stop services
-./docker-helper.sh stop
-
-# Complete cleanup
-docker-compose down -v
-```
 
 ### What Happens Automatically
 

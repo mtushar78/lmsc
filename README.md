@@ -59,9 +59,7 @@ LMSC/
 │   │   └── teacher/           # Teacher pages
 │   └── styles.css
 │
-├── docker-compose.yml          # Docker orchestration
-├── docker-helper.sh            # Helper commands
-└── DOCKER_SETUP.md            # Docker documentation
+└── docker-compose.yml          # Docker orchestration
 ```
 
 ## How to Run Locally
@@ -149,6 +147,27 @@ When you run `docker-compose up -d`:
 - Lessons: Quadratics, Forces
 - Quiz questions and tasks
 
+### Common Docker Commands
+
+```bash
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Check container status
+docker-compose ps
+
+# Restart services
+docker-compose restart
+
+# Fresh start with clean data
+docker-compose down -v && docker-compose up -d
+
+# Stop all services
+docker-compose down
+```
+
+See [DOCKER_SETUP.md](DOCKER_SETUP.md) for detailed Docker documentation.
 
 ## How to Deploy
 

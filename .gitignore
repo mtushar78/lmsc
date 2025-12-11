@@ -38,12 +38,18 @@ node_modules/
 
 # Backend (Prisma data - migrations kept for reproducibility)
 backend/data/
+backend/coverage/
 
 # Frontend (Next.js build artifacts)
 frontend/.next/
 frontend/out/
 frontend/build/
 frontend/coverage/
+
+# Test coverage reports (generated files)
+coverage/
+*.coverage
+.nyc_output/
 
 # Production builds
 /build

@@ -149,7 +149,6 @@ When you run `docker-compose up -d`:
 - Lessons: Quadratics, Forces
 - Quiz questions and tasks
 
-See [DOCKER_SETUP.md](DOCKER_SETUP.md) for detailed Docker documentation.
 
 ## How to Deploy
 
@@ -159,7 +158,7 @@ See [DOCKER_SETUP.md](DOCKER_SETUP.md) for detailed Docker documentation.
 ```bash
 cd backend
 npm install
-NODE_ENV=production npm start
+npm start
 ```
 
 #### Frontend
@@ -173,16 +172,9 @@ npm start
 ### Docker Deployment
 
 ```bash
-# Build images
-docker build -t lmsc-backend:latest ./backend
-docker build -t lmsc-frontend:latest ./frontend
-
 # Run with docker-compose
 docker-compose up -d
 
-# Or push to registry
-docker tag lmsc-backend:latest myregistry/lmsc-backend:latest
-docker push myregistry/lmsc-backend:latest
 ```
 
 ### Environment Variables
@@ -252,12 +244,3 @@ npm run test:unit
 ### Teachers
 - `GET /api/teacher/engagement` - Get engagement analytics
 
-## Documentation
-
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System design and scalability
-- [DOCKER_SETUP.md](DOCKER_SETUP.md) - Docker usage guide
-- [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Quick reference
-
-## License
-
-MIT
